@@ -1,0 +1,26 @@
+# Local secrets (never commit)
+.env
+.env.*
+!.env.example
+config.local.json
+*.key
+
+# Build output
+target/
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SortBot local data and logs
+.sortbot/
+*.log
