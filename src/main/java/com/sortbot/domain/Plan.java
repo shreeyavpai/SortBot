@@ -8,6 +8,7 @@ import java.util.List;
 /** An ordered list of proposed actions. Nothing runs until approve() has been called. */
 public class Plan {
     private final List<FileAction> actions = new ArrayList<>();
+    private final List<String> warnings = new ArrayList<>();
     private boolean approved;
 
     public void add(FileAction action) {
@@ -18,6 +19,8 @@ public class Plan {
     public List<FileAction> getActions() { return Collections.unmodifiableList(actions); }
     public int size() { return actions.size(); }
     public boolean isApproved() { return approved; }
+    public void addWarning(String warning) { warnings.add(warning); }
+    public List<String> getWarnings() { return Collections.unmodifiableList(warnings); }
 
     public FileAction find(String actionId) {
         for (FileAction a : actions) if (a.id().equals(actionId)) return a;
