@@ -7,15 +7,20 @@ SortBot is a Java desktop AI agent that organizes cluttered folders. It follows 
 
 ## Stack
 - Java 17 baseline (records and switch expressions are fine). Maven. Run `mvn test` before finishing any task.
-- GUI: Swing. CLI: plain Java with subcommands and a `--json` flag. JSON: Jackson. HTTP: `java.net.http.HttpClient`. Tests: JUnit 5 with hand-written fakes (no Mockito).
-- Do NOT add dependencies without asking. Allowed: jackson-databind, junit-jupiter, Apache PDFBox.
+- GUI: Swing. CLI: plain Java with subcommands and a `--json` flag. JSON: own `infra.Json`. HTTP: `java.net.http.HttpClient`. Tests: JUnit 5 with hand-written fakes (no Mockito).
+- Do NOT add dependencies without asking. The only dependency is junit-jupiter (tests). JSON uses `com.sortbot.infra.Json`.
 - Base package: `com.sortbot`.
 
 ## Already implemented and tested (do not rewrite; extend only when asked)
-`domain`: Category, FileRecord, Inventory, FileAction, MoveFileAction, CreateFolderAction, FileActions, Plan, RunResult, UndoResult.
-`core`: FolderAuthorizer, FileScanner, ProgressPublisher/Listener/Event, PlanExecutor, UndoManager, ActionLog, ActionEntry, LogFilter, ActionStatus, TraceLogger, FlatJson, CleanupRule, AgeRule, DuplicateRule, TempFileRule, CleanupDetector, CleanupCandidate, ReportBuilder.
-`infra`: FileSystemGateway, DotEnv.
-Notes: `Plan.edit(actionId, Path newTarget)`; `ProgressPublisher.publish(event)` (not notifyAll); `FileSystemGateway.list(folder, recursive)` returns a `Listing` record.
+`domain`: Category, FileRecord, Inventory, FileAction, MoveFileAction, CreateFolderAction, FileActions, Plan, RunResult, UndoResult, UserRule.
+`core`: FolderAuthorizer, FileScanner, Progress* (Observer), PlanExecutor, UndoManager, ActionLog, ActionEntry, LogFilter, TraceLogger, FlatJson, CleanupRule + Age/Duplicate/TempFile rules, CleanupDetector, ReportBuilder, MemoryManager, RuleRepository, FolderNames.
+`infra`: FileSystemGateway, DotEnv, Json (our own small JSON reader/writer; do NOT add Jackson or Gson).
+`llm`: LLMClient, GeminiClient, OllamaClient, FakeLLMClient, LLMClientCreator + creators, LLMConfig, HttpTransport, JdkHttpTransport.
+`agent`: PromptBuilder, ResponseParser, PlanValidator, Planner, Classifier + NameRuleStrategy + LLMClassificationStrategy, Tool + five tools, ToolManager, AgentController, AgentSession.
+`facade`: SortBotFacade (all features F01 to F11 are reachable through it).
+`ui.cli`: CliApp, CliProgressPrinter, Main (all commands, `--json`).
+Still to build: the Swing GUI in `ui.gui` (call only SortBotFacade; run long work in SwingWorker; show progress through ProgressListener).
+Notes: `Plan.edit(actionId, Path newTarget)`; `ProgressPublisher.publish(event)`; `FileSystemGateway.list(folder, recursive)` returns a `Listing`; the model returns relative folder names per file id and the Planner builds absolute paths, so the model never produces a path.
 
 ## Packages
 - `com.sortbot.ui.gui`: MainWindow, panels, GuiProgressPanel (UI only, no logic)
