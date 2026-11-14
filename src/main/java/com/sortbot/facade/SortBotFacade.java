@@ -108,6 +108,11 @@ public class SortBotFacade {
         return inv;
     }
 
+    /** Lets the user correct a file's category by hand. */
+    public void setCategory(com.sortbot.domain.FileRecord record, com.sortbot.domain.Category category) {
+        record.classify(category, 1.0, "Set by you");
+    }
+
     public Inventory classify(Inventory inventory) {
         session.inventory = inventory;
         return classifier.classify(inventory);
@@ -124,6 +129,21 @@ public class SortBotFacade {
     public void editPlan(Plan plan, String actionId, Path newTarget) {
         if (!authorizer.isAuthorized(newTarget)) throw new IllegalArgumentException("That destination is outside the authorized folders.");
         plan.edit(actionId, newTarget);
+        ensureFolderActions(plan, newTarget.toAbsolutePath().normalize().getParent());
+    }
+
+    /** Makes sure every folder level of an edited destination has its own CreateFolderAction, placed before the moves. */
+    private void ensureFolderActions(Plan plan, Path folder) {
+        if (session.inventory == null || folder == null || !folder.startsWith(session.inventory.getRoot())) return;
+        java.util.Set<Path> existing = new java.util.HashSet<>();
+        for (var a : plan.getActions()) if (a instanceof com.sortbot.domain.CreateFolderAction c) existing.add(c.target().toAbsolutePath().normalize());
+        Path current = session.inventory.getRoot();
+        int at = 0;
+        for (Path part : current.relativize(folder)) {
+            current = current.resolve(part);
+            if (!existing.contains(current)) plan.insert(at, new com.sortbot.domain.CreateFolderAction(gateway, current));
+            at++;
+        }
     }
 
     public boolean rejectMove(Plan plan, String actionId) { return plan.remove(actionId); }

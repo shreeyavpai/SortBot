@@ -141,13 +141,7 @@ public class CliApp {
 
     private LLMClient llm(Args a) {
         if (llmOverride != null) return llmOverride;
-        LLMConfig cfg = LLMConfig.fromEnv(new DotEnv(Path.of(a.flag("env", ".env"))));
-        try {
-            return LLMClientCreator.forConfig(cfg, new JdkHttpTransport()).createClient();
-        } catch (IllegalArgumentException e) {
-            String msg = e.getMessage();
-            return prompt -> { throw new LLMException(msg); };
-        }
+        return com.sortbot.facade.FacadeFactory.llmFromEnv(Path.of(a.flag("env", ".env")));
     }
 
     private int print(Args a, Result r) {
