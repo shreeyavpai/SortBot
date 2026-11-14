@@ -19,7 +19,7 @@ SortBot is a Java desktop AI agent that organizes cluttered folders. It follows 
 `agent`: PromptBuilder, ResponseParser, PlanValidator, Planner, Classifier + NameRuleStrategy + LLMClassificationStrategy, Tool + five tools, ToolManager, AgentController, AgentSession.
 `facade`: SortBotFacade (all features F01 to F11 are reachable through it).
 `ui.cli`: CliApp, CliProgressPrinter, Main (all commands, `--json`).
-Still to build: the Swing GUI in `ui.gui` (call only SortBotFacade; run long work in SwingWorker; show progress through ProgressListener).
+`ui.gui`: GuiMain, MainWindow, MainPanel, GuiContext, GuiProgressPanel and seven panels (Folders, Scan, Plan, Cleanup, Chat, Rules, History). GUI code calls only SortBotFacade and runs long work in SwingWorker through GuiContext.run.
 Notes: `Plan.edit(actionId, Path newTarget)`; `ProgressPublisher.publish(event)`; `FileSystemGateway.list(folder, recursive)` returns a `Listing`; the model returns relative folder names per file id and the Planner builds absolute paths, so the model never produces a path.
 
 ## Packages

@@ -31,7 +31,8 @@ sortbot undo                                    # undo the last run
 sortbot history                                 # what SortBot has done
 sortbot --help                                  # all commands; add --json for machine-readable output
 ```
-The GUI launch command will be added here when it is finished.
+## Running the GUI
+Build once with `mvn -q compile`, then start the window with `sortbot-gui.cmd` (Windows) or `./sortbot-gui.sh` (macOS/Linux). Tabs: Folders, Scan, Plan, Cleanup, Chat, Rules, History. Every feature is reachable from the GUI; nothing changes on disk until you approve a plan.
 
 ## Project status
 | Area | Status |
@@ -39,7 +40,7 @@ The GUI launch command will be added here when it is finished.
 | Folder authorization, scanning, plans, execution, undo, action log, cleanup rules, reports | Implemented and unit tested |
 | LLM clients (Gemini, Ollama), classifier, planner, tools, agent controller, rules and memory | Implemented and unit tested with a fake model; needs a live-key check |
 | CLI | Implemented and tested |
-| GUI | In progress |
+| GUI (Swing: 7 tabs) | Implemented; panels tested without a screen |
 
 ## Safety design
 - Only `FileSystemGateway` touches user files, and only inside folders you authorized.
