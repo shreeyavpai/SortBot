@@ -16,6 +16,12 @@ public class Plan {
         actions.add(action);
     }
 
+    /** Adds an action at a given position (used to create a new folder before the moves that need it). */
+    public void insert(int index, FileAction action) {
+        ensureEditable();
+        actions.add(Math.max(0, Math.min(index, actions.size())), action);
+    }
+
     public List<FileAction> getActions() { return Collections.unmodifiableList(actions); }
     public int size() { return actions.size(); }
     public boolean isApproved() { return approved; }

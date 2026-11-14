@@ -11,6 +11,7 @@ import com.sortbot.domain.Plan;
 import com.sortbot.domain.UserRule;
 import com.sortbot.llm.FakeLLMClient;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class PlannerAndValidatorTest {
         FakeLLMClient llm = new FakeLLMClient(List.of("```json\n{\"moves\":[{\"file\":\"a.pdf\",\"folder\":\"School\"},{\"file\":\"b.pdf\",\"folder\":\"School\"},{\"file\":\"c.jpg\",\"folder\":\"Pictures/Trips\"}]}\n```"));
         Plan plan = s.planner(llm).createPlan(inv, "tidy up");
         assertEquals(3, moves(plan));
-        assertEquals(5, plan.size(), "two folders plus three moves");
+        assertEquals(6, plan.size(), "three folder levels (School, Pictures, Pictures/Trips) plus three moves");
         assertFalse(plan.isApproved());
         assertTrue(llm.prompts().get(0).contains("tidy up"));
     }
@@ -110,5 +111,20 @@ class PlannerAndValidatorTest {
         assertEquals(4, v.removed());
         assertEquals(1, plan.size());
         assertFalse(v.isClean());
+    }
+
+    @Test
+    void nestedFoldersAreCreatedLevelByLevelAndUndoRemovesAllOfThem() throws IOException {
+        AgentTestSupport s = new AgentTestSupport(tmp);
+        Inventory inv = s.scan("a.pdf");
+        Plan plan = s.planner(new FakeLLMClient(List.of("{\"moves\":[{\"file\":\"a.pdf\",\"folder\":\"School/Year2/Notes\"}]}"))).createPlan(inv, "");
+        assertEquals(4, plan.size(), "three folder levels plus one move");
+        plan.approve();
+        var log = new com.sortbot.core.ActionLog();
+        var run = new com.sortbot.core.PlanExecutor(log, s.trace).execute(plan);
+        assertTrue(Files.exists(s.root.resolve("School/Year2/Notes/a.pdf")));
+        new com.sortbot.core.UndoManager(log, s.gateway, s.trace).undoRun(run.runId());
+        assertTrue(Files.exists(s.root.resolve("a.pdf")));
+        assertFalse(Files.exists(s.root.resolve("School")), "every folder SortBot created is removed again");
     }
 }

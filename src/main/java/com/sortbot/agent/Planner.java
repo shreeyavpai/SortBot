@@ -16,9 +16,11 @@ import com.sortbot.llm.LLMException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Turns an inventory and the user's wishes into a Plan (F04). The AI proposes destination folders;
@@ -87,12 +89,13 @@ public class Planner {
             }
         }
 
+        Set<Path> createdFolders = new HashSet<>();
         for (Map.Entry<String, List<FileRecord>> e : byFolder.entrySet()) {
             Path folder = root.resolve(e.getKey());
             List<FileRecord> moving = new ArrayList<>();
             for (FileRecord r : e.getValue()) if (!folder.equals(r.getPath().getParent())) moving.add(r);
             if (moving.isEmpty()) continue;
-            plan.add(new CreateFolderAction(gateway, folder));
+            addFolderLevels(plan, root, folder, createdFolders);
             for (FileRecord r : moving) plan.add(new MoveFileAction(gateway, r.getPath(), folder.resolve(r.getName())));
         }
 
@@ -106,6 +109,16 @@ public class Planner {
     public Intent interpretIntent(String message, String toolDescriptions, String stateSummary) throws LLMException, AgentParseException {
         String prompt = prompts.buildIntentPrompt(message, toolDescriptions, stateSummary, memory.getRules());
         return LlmAsk.ask(llm, prompt, parser::parseIntent);
+    }
+
+    /** One CreateFolderAction per level (parents first), so undo can remove exactly the folders SortBot made. */
+    private void addFolderLevels(Plan plan, Path root, Path folder, Set<Path> done) {
+        Path rel = root.relativize(folder);
+        Path current = root;
+        for (Path part : rel) {
+            current = current.resolve(part);
+            if (done.add(current)) plan.add(new CreateFolderAction(gateway, current));
+        }
     }
 
     private static void addTo(Map<String, List<FileRecord>> map, String folder, FileRecord r) {
