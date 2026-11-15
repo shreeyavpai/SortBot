@@ -1,13 +1,13 @@
 package com.sortbot.agent;
 
-import com.sortbot.domain.Category;
-import com.sortbot.domain.FileRecord;
-import com.sortbot.domain.UserRule;
-
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.sortbot.domain.Category;
+import com.sortbot.domain.FileRecord;
+import com.sortbot.domain.UserRule;
 
 /** Builds the prompts sent to the model. Only names, categories and short snippets are ever included. */
 public class PromptBuilder {
@@ -42,6 +42,7 @@ public class PromptBuilder {
         sb.append("- Use short, clear folder names and group similar files together. Avoid a folder for a single file unless needed.\n");
         sb.append("- Only use file ids from the list. Each file may appear at most once. Leave a file out if it should stay where it is.\n");
         sb.append("- You can only propose moves. You cannot delete anything.\n");
+        sb.append("- Leave temporary or partial-download files (.tmp, .crdownload, ~$ lock files) and obvious duplicates where they are; a separate cleanup tool handles them.\n");
         sb.append(GUARD).append("\n");
         if (rules != null && !rules.isEmpty()) {
             sb.append("The user's rules (always follow them):\n");
