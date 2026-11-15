@@ -1,6 +1,9 @@
 package com.sortbot.ui.gui;
 
-import com.sortbot.core.CleanupCandidate;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -9,10 +12,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.util.ArrayList;
-import java.util.List;
+
+import com.sortbot.core.CleanupCandidate;
 
 /** F08: find old, duplicate and temporary files and move the ones you choose to To_Be_Deleted. Nothing is deleted. */
 public class CleanupPanel extends JPanel {
@@ -33,6 +34,8 @@ public class CleanupPanel extends JPanel {
         top.add(move);
         top.add(new JLabel("Files are moved, never deleted, and you can undo it."));
         add(top, BorderLayout.NORTH);
+        table.getColumnModel().getColumn(0).setMaxWidth(70);
+        table.getColumnModel().getColumn(0).setPreferredWidth(70);
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
