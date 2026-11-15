@@ -1,14 +1,14 @@
 package com.sortbot.llm;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 class LLMClientsTest {
@@ -129,5 +129,13 @@ class LLMClientsTest {
         assertEquals("two", f.generate("p3"));
         assertEquals(3, f.calls());
         assertThrows(LLMException.class, () -> FakeLLMClient.failing("down").generate("x"));
+    }
+    @Test
+    void geminiRejectsModelNamesThatAreClearlyWrongBeforeSendingAnything() {
+        LLMConfig bad = new LLMConfig("gemini", "Default Gemini API Key", "k", null, null);
+        FakeHttp http = new FakeHttp().reply(200, GEMINI_OK);
+        LLMException e = assertThrows(LLMException.class, () -> new GeminiClient(bad, http, ms -> {}).generate("x"));
+        assertTrue(e.getMessage().contains("LLM_MODEL"));
+        assertEquals(0, http.urls.size());
     }
 }

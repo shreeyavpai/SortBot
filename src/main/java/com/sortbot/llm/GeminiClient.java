@@ -1,10 +1,10 @@
 package com.sortbot.llm;
 
-import com.sortbot.infra.Json;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import com.sortbot.infra.Json;
 
 /** Adapter for Google's Gemini REST API. Retries rate limits and server errors with backoff. */
 public class GeminiClient implements LLMClient {
@@ -29,6 +29,9 @@ public class GeminiClient implements LLMClient {
     public String generate(String prompt) throws LLMException {
         if (config.apiKey().isEmpty()) throw new LLMException("No API key is set. Add LLM_API_KEY to your .env file.");
         if (config.model().isEmpty()) throw new LLMException("No model is set. Add LLM_MODEL to your .env file.");
+        if (!config.model().matches("[A-Za-z0-9._/-]+")) {
+            throw new LLMException("LLM_MODEL does not look like a model name (it has spaces or odd characters). Copy the exact model id from Google AI Studio, for example gemini-2.5-flash.");
+        }
         String url = BASE_URL + config.model() + ":generateContent";
         Map<String, String> headers = Map.of("Content-Type", "application/json", "x-goog-api-key", config.apiKey());
         String body = Json.write(Map.of(
