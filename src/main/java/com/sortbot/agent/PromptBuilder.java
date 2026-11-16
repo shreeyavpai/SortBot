@@ -48,7 +48,10 @@ public class PromptBuilder {
             sb.append("The user's rules (always follow them):\n");
             for (UserRule r : rules) sb.append("- ").append(r.describe()).append("\n");
         }
-        if (instruction != null && !instruction.isBlank()) sb.append("User instruction: ").append(clean(instruction, 500)).append("\n");
+        if (instruction != null && !instruction.isBlank()) {
+            sb.append("The user's instruction is the top priority. Do exactly what it asks. If it names only some files (for example \"tax documents\"), propose moves only for those files and leave every other file out of your reply. If it asks for a general tidy-up, organize all the files.\n");
+            sb.append("User instruction: ").append(clean(instruction, 500)).append("\n");
+        }
         sb.append("Reply with ONLY a JSON object, no markdown, in exactly this format:\n");
         sb.append("{\"moves\":[{\"file\":\"<file id>\",\"folder\":\"<relative folder>\"}]}\n");
         sb.append("Files (id | category):\n");
