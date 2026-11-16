@@ -1,9 +1,9 @@
 package com.sortbot.agent;
 
-import com.sortbot.domain.Plan;
-
 import java.util.List;
 import java.util.Map;
+
+import com.sortbot.domain.Plan;
 
 /** Builds a plan from the user's instruction. The plan waits for approval; nothing is moved. */
 public class GeneratePlanTool implements Tool {
@@ -29,8 +29,9 @@ public class GeneratePlanTool implements Tool {
         if (session.inventory == null) return ToolResult.rejected("Scan a folder first.");
         Plan plan = planner.createPlan(session.inventory, args.get("instruction"));
         session.pendingPlan = plan;
-        String msg = plan.size() == 0 ? "I didn't find anything to move for that request."
-                : "I prepared a plan with " + plan.size() + " action(s). Review it before anything changes.";
+        long moves = plan.getActions().stream().filter(a -> a.source() != null).count();
+        String msg = moves == 0 ? "I didn't find anything to move for that request."
+            : "I prepared a plan with " + moves + " move(s). Review it before anything changes.";
         if (!plan.getWarnings().isEmpty()) msg += " (" + plan.getWarnings().size() + " note(s) about the plan.)";
         return new ToolResult(true, msg, plan, null, null);
     }
